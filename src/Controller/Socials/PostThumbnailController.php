@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class PostThumbnailController extends Controller
 {
+    /**
+     * Initializes the controller with required dependencies for image generation and post retrieval.
+     */
     public function __construct(
         private readonly Imagine $imagine,
         private readonly PostRepository $postRepository,
@@ -23,6 +26,13 @@ final class PostThumbnailController extends Controller
     ) {
     }
 
+    /**
+     * Resolves the thumbnail image for a post by its lowercased title.
+     * Generates the image on-the-fly if it doesn't exist in the filesystem.
+     *
+     * @param string $lowercasedTitle The lowercased version of the post title used to locate the thumbnail
+     * @return BinaryFileResponse The thumbnail image file response
+     */
     public function __invoke(string $lowercasedTitle): BinaryFileResponse
     {
         $imageFilePath = $this->thumbnailGenerator->resolveImageFilePath($lowercasedTitle);
@@ -35,6 +45,15 @@ final class PostThumbnailController extends Controller
         return response()->file($imageFilePath);
     }
 
+    /**
+     * Generates a thumbnail image with post title, author information, and branding.
+     * Creates a 2040x1117 canvas, adds the post title in black font, author details in green font,
+     * pastes the author's profile picture, and applies the Rector logo before saving to the specified path.
+     *
+     * @param string $title The lowercased post title to retrieve post data
+     * @param string $imageFilePath The filesystem path where the generated image will be saved
+     * @return void
+     */
     private function createImage(string $title, string $imageFilePath): void
     {
         $box = new Box(2040, 1117);
